@@ -2,6 +2,8 @@ import Foundation
 import SwiftUI
 import QuartzCore
 
+// Wraps the c++ controllers for driving the SwiftUI
+// Also drives per-frame update triggers on the c++
 @Observable
 class SwiftWrapper {
     static var instance: SwiftWrapper? = nil
@@ -81,6 +83,8 @@ class DisplayLinkManager {
     @objc func tick(displayLink: CADisplayLink) {
         let deltaTime = displayLink.targetTimestamp - displayLink.timestamp
         lerpedX = lerpedX + (wrapper.x - lerpedX) * Float(deltaTime) * 2
+        
+        // send in current state with the update
         autoPilot.pointee.update(deltaTime, lerpedX, wrapper.spam)
         wrapper.spam = false
     }

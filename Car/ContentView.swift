@@ -6,6 +6,8 @@ struct ContentView: View {
     let size: CGFloat = 500
     var body: some View {
         HStack {
+            
+            // each object type gets its own icon
             ZStack {
                 ForEach(wrapper.staticObjectsArray, content: { item in
                     Image(systemName: item.type.iconName)
@@ -58,6 +60,7 @@ struct ContentView: View {
                     }
                 }
                 
+                // Spam currently does nothing due to multithread overflow processing being disabled in the c++
                 Button(action: {
                     wrapper.spam = true
                 }) {
