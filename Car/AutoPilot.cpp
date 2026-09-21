@@ -6,11 +6,14 @@ AutoPilot::AutoPilot() {
 }
 
 void AutoPilot::update(double deltaTime, float x, bool spam) {
+    // modify tracked object state
     updateObjectsAndSend(x,spam);
     
+    // process an update now that we've sent one across the wire
     uiController.processUpdate();
 }
 
+// vertical movement constant each frame, horizontal movement driven by swiftUI car
 void AutoPilot::updateObjectsAndSend(float x, bool spam) {
     for (auto& obj : staticObjects) {
         auto y = obj.y + 0.001;
@@ -36,11 +39,13 @@ void AutoPilot::send(bool spam) {
     auto dynamicBytesSize = numDynamic * DynamicObject::getSize();
     std::shared_ptr<char[]> buf = std::make_shared<char[]>(staticBytesSize + dynamicBytesSize);
     
+    // convert and copy tracked objects into buffer
     std::memcpy(buf.get(), staticObjects.data(), staticBytesSize);
     std::memcpy(buf.get() + staticBytesSize, dynamicObjects.data(), dynamicBytesSize);
     
     uiController.receive({buf,numStatic,numDynamic});
     
+    // simulate clogging up the queue for multithreaded processing
     if (spam) {
         for (int i = 0; i < 20; i++) {
             std::shared_ptr<char[]> buf = std::make_shared<char[]>(staticBytesSize + dynamicBytesSize);

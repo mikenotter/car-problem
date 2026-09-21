@@ -16,6 +16,7 @@ struct UpdateInfo {
     unsigned long dynamicCount;
 };
 
+// static and dynamic objects are currently identical, but both are included to show combining bytes into a buffer
 struct StaticObject {
 public:
     ObjectType type;
@@ -42,10 +43,13 @@ public:
     static int getSize() { return sizeof(DynamicObject); }
 };
 
+// The receiving end of the message transfer
 class UIController {
 private:
     std::queue<UpdateInfo> updateQueue;
     VoidCallback onUpdated;
+    
+    // I began adding threading as an example of handling message volume overflow - but Swift/C++ interop became problematic :(
     //std::mutex mtx;
     //std::condition_variable cv;
     //std::thread worker;
@@ -62,6 +66,7 @@ public:
     void printObjects();
 };
 
+// The sending end of message transfer - also updates the state of tracked objects
 class AutoPilot {
 private:
     std::vector<StaticObject> staticObjects;

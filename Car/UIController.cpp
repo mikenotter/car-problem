@@ -5,24 +5,6 @@ UIController::UIController() {
     //worker = std::thread(&UIController::popExtraUpdates, this);
 }
 
-//void UIController::popExtraUpdates() {
-//    while (true) {
-//        {
-//            std::unique_lock<std::mutex> lock(mutex);
-//            cv.wait(lock, [this]() {
-//                return needsFlush && updateQueue.size() > 1;
-//            });
-//            
-//            if (updateQueue.size() > 1) {
-//                updateQueue.pop();
-//                extraUpdatesPopped++;
-//            } else {
-//                needsFlush = false;
-//            }
-//        }
-//    }
-//}
-
 void UIController::receive(UpdateInfo updateInfo) {
     updateQueue.push(updateInfo);
 }
@@ -40,6 +22,7 @@ void UIController::processUpdate() {
         int staticObjectSize = StaticObject::getSize();
         int dynamicObjectSize = DynamicObject::getSize();
         
+        // fill static objects
         std::vector<StaticObject> newStaticObjects;
         
         for (int i = 0; i < staticCount; i++) {
@@ -50,6 +33,7 @@ void UIController::processUpdate() {
             buf += staticObjectSize;
         }
         
+        // fill dynamic objects
         std::vector<DynamicObject> newDynamicObjects;
         
         for (int i = 0; i < dynamicCount; i++) {
@@ -63,6 +47,7 @@ void UIController::processUpdate() {
         this->staticObjects = std::move(newStaticObjects);
         this->dynamicObjects = std::move(newDynamicObjects);
         
+        // update swiftUI
         if (onUpdated) {
             onUpdated();
         }
@@ -77,3 +62,22 @@ void UIController::processUpdate() {
 void UIController::setCallback(VoidCallback onUpdated) {
     this->onUpdated = std::move(onUpdated);
 }
+
+// for now, worker thread just pops extra messages - should also check for "important" updates
+//void UIController::popExtraUpdates() {
+//    while (true) {
+//        {
+//            std::unique_lock<std::mutex> lock(mutex);
+//            cv.wait(lock, [this]() {
+//                return needsFlush && updateQueue.size() > 1;
+//            });
+//
+//            if (updateQueue.size() > 1) {
+//                updateQueue.pop();
+//                extraUpdatesPopped++;
+//            } else {
+//                needsFlush = false;
+//            }
+//        }
+//    }
+//}
